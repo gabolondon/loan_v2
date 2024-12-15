@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
     import { useParams, useNavigate } from 'react-router-dom';
     import { useStore } from '../store/useStore';
     import { Loan, Payment } from '../types';
-    import { format } from 'date-fns';
+    import { differenceInMonths, format } from "date-fns";
     import { ArrowLeft } from 'lucide-react';
 
     export const LoanDetails: React.FC = () => {
@@ -27,7 +27,7 @@ import React, { useEffect, useState } from 'react';
         return (
           <div className="flex items-center justify-center h-screen">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-4">Loan not found</h2>
+              <h2 className="mb-4 text-2xl font-semibold">Loan not found</h2>
               <button
                 onClick={handleGoBack}
                 className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
@@ -49,7 +49,7 @@ import React, { useEffect, useState } from 'react';
 
       return (
         <div className="min-h-screen bg-gray-50">
-          <div className="px-4 py-8 mx-auto max-w-4xl">
+          <div className="max-w-4xl px-4 py-8 mx-auto">
             <div className="mb-8">
               <button
                 onClick={handleGoBack}
@@ -59,8 +59,8 @@ import React, { useEffect, useState } from 'react';
                 Back to Dashboard
               </button>
             </div>
-            <div className="bg-white rounded-xl shadow-lg p-6 space-y-6">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <div className="p-6 space-y-6 bg-white shadow-lg rounded-xl">
+              <h2 className="mb-4 text-3xl font-bold text-gray-900">
                 Loan Details
               </h2>
               <div className="space-y-4">
@@ -119,8 +119,8 @@ import React, { useEffect, useState } from 'react';
                   </div>
                 </div>
               </div>
-              <div className="mt-6 border-t pt-4">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              <div className="pt-4 mt-6 border-t">
+                <h3 className="mb-4 text-xl font-semibold text-gray-800">
                   Payments
                 </h3>
                 {loan?.payments && loan?.payments.length > 0 ? (
