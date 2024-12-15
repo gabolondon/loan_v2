@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
     import { ArrowLeft } from 'lucide-react';
 
     export const LoanDetails: React.FC = () => {
+			//some comment to check
       const { loanId } = useParams();
       const { loans } = useStore();
       const [loan, setLoan] = useState<Loan | undefined>(undefined);
