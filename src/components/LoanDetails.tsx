@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
     import { useParams, useNavigate } from 'react-router-dom';
     import { useStore } from '../store/useStore';
     import { Loan, Payment } from '../types';
-    import { format } from 'date-fns';
+    import { format, differenceInMonths } from 'date-fns';
     import { ArrowLeft } from 'lucide-react';
 
     export const LoanDetails: React.FC = () => {
-			//some comment to check
       const { loanId } = useParams();
       const { loans } = useStore();
       const [loan, setLoan] = useState<Loan | undefined>(undefined);
