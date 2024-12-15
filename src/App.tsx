@@ -8,6 +8,8 @@ import React, { useEffect } from 'react';
     import { User } from './types';
     import { BrowserRouter, Routes, Route } from 'react-router-dom';
     import { LoanDetails } from './components/LoanDetails';
+    import { LoanList } from './components/LoanList';
+    import { Home } from './components/Home';
 
     function App() {
       const { user, setUser } = useStore();
@@ -31,8 +33,12 @@ import React, { useEffect } from 'react';
       return (
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={user ? <Dashboard /> : <Login />} />
-            <Route path="/loan/:loanId" element={<LoanDetails />} />
+            <Route path="/" element={user ? <Dashboard /> : <Login />}>
+              <Route index element={<Home />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="loans" element={<LoanList />} />
+              <Route path="loan/:loanId" element={<LoanDetails />} />
+            </Route>
           </Routes>
         </BrowserRouter>
       );
