@@ -1,177 +1,91 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, LogOut } from 'lucide-react';
-import { useStore } from '../store/useStore';
-import { LoanCard } from './LoanCard';
-import { UserManagement } from './UserManagement';
-import { Loan } from '../types';
-import { auth } from '../config/firebase';
+import React from 'react';
+    import { LogOut, Home, Users, Wallet } from 'lucide-react';
+    import { useStore } from '../store/useStore';
+    import { UserManagement } from './UserManagement';
+    import { auth } from '../config/firebase';
+    import { NavLink, Outlet, useLocation } from 'react-router-dom';
+    import { Breadcrumb } from './Breadcrumb';
 
-export const Dashboard: React.FC = () => {
-  const { user, loans, addLoan, requestLoan, fetchLoans, fetchLoansByUser } = useStore();
-  const [showRequestForm, setShowRequestForm] = useState(false);
+    export const Dashboard: React.FC = () => {
+      const { user } = useStore();
+      const location = useLocation();
 
-  useEffect(() => {
-    if (user &&!user?.isAdmin) {
-      fetchLoansByUser(user.uid);
-    } else if (user) {
-      fetchLoans();
-    }
-  }, [user, fetchLoansByUser]);
-
-  const handleAddLoan = () => {
-    if (!user?.isAdmin) return;
-
-    const description = prompt('Enter loan description:');
-    const amount = parseFloat(prompt('Enter loan amount:') || '0');
-    const interestRate = parseFloat(prompt('Enter interest rate (%):') || '0');
-    const assignedTo = prompt('Enter assigned user email:') || '';
-
-    if (description && amount > 0 && interestRate > 0 && assignedTo) {
-      const loan: Loan = {
-        id: crypto.randomUUID(),
-        description,
-        amount,
-        interestRate,
-        assignedTo,
-        startDate: new Date().toISOString(),
-        payments: [],
-        status: 'approved',
+      const handleLogout = () => {
+        auth.signOut();
       };
-      addLoan(loan);
-    }
-  };
 
-  const handleRequestLoan = (e: React.FormEvent) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const description = form.description.value;
-    const amount = parseFloat(form.amount.value);
-    const interestRate = parseFloat(form.interestRate.value);
+      const navItems = [
+        {
+          path: '/',
+          icon: <Home size={20} />,
+          label: 'Home',
+        },
+        {
+          path: '/users',
+          icon: <Users size={20} />,
+          label: 'Users',
+          adminOnly: true,
+        },
+        {
+          path: '/loans',
+          icon: <Wallet size={20} />,
+          label: 'Loans',
+        },
+      ];
 
-    if (description && amount > 0 && interestRate > 0 && user?.email) {
-      requestLoan({
-        description,
-        amount,
-        interestRate,
-        assignedTo: user.email,
-        startDate: new Date().toISOString(),
-      });
-      setShowRequestForm(false);
-      form.reset();
-    }
-  };
-
-  const handleLogout = () => {
-    auth.signOut();
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="px-4 py-8 mx-auto max-w-7xl">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Loan Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user?.name}</p>
-          </div>
-          <div className="flex gap-4">
-            {user?.isAdmin ? (
-              <button
-                onClick={handleAddLoan}
-                className="flex items-center px-6 py-3 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
-              >
-                <Plus size={20} className="mr-2" />
-                New Loan
-              </button>
-            ) : (
-              <button
-                onClick={() => setShowRequestForm(true)}
-                className="flex items-center px-6 py-3 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
-              >
-                <Plus size={20} className="mr-2" />
-                Request Loan
-              </button>
-            )}
-            <button
-              onClick={handleLogout}
-              className="flex items-center px-6 py-3 text-gray-700 transition-colors bg-gray-200 rounded-lg hover:bg-gray-300"
-            >
-              <LogOut size={20} className="mr-2" />
-              Logout
-            </button>
-          </div>
-        </div>
-
-        {user?.isAdmin && <UserManagement />}
-
-        {showRequestForm && !user?.isAdmin && (
-          <div className="p-6 mb-8 bg-white shadow-lg rounded-xl">
-            <h2 className="mb-4 text-xl font-semibold">Request a New Loan</h2>
-            <form onSubmit={handleRequestLoan} className="space-y-4">
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                  Loan Description
-                </label>
-                <input
-                  type="text"
-                  id="description"
-                  name="description"
-                  required
-                  className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
-                  Amount ($)
-                </label>
-                <input
-                  type="number"
-                  id="amount"
-                  name="amount"
-                  min="1"
-                  step="0.01"
-                  required
-                  className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="interestRate" className="block text-sm font-medium text-gray-700">
-                  Interest Rate (%)
-                </label>
-                <input
-                  type="number"
-                  id="interestRate"
-                  name="interestRate"
-                  min="0.1"
-                  step="0.1"
-                  required
-                  className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              <div className="flex justify-end gap-4">
+      return (
+        <div className="min-h-screen bg-gray-50 flex">
+          <aside className="w-64 bg-gray-100 border-r p-4 flex flex-col">
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-gray-900">Loan Manager</h1>
+            </div>
+            <nav className="flex-1 space-y-2">
+              {navItems.map((item) => {
+                if (item.adminOnly && !user?.isAdmin) return null;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `flex items-center px-4 py-2 rounded-md hover:bg-gray-200 ${
+                        isActive ? 'bg-gray-200 font-semibold' : 'text-gray-700'
+                      }`
+                    }
+                  >
+                    <span className="mr-2">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </nav>
+            <div className="mt-auto pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <img
+                    src={user?.photoURL}
+                    alt={user?.name}
+                    className="w-8 h-8 rounded-full mr-2"
+                  />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">
+                      {user?.name}
+                    </p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+                </div>
                 <button
-                  type="button"
-                  onClick={() => setShowRequestForm(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  onClick={handleLogout}
+                  className="text-gray-600 hover:text-gray-800"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-                >
-                  Submit Request
+                  <LogOut size={20} />
                 </button>
               </div>
-            </form>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {loans.map((loan) => (
-            <LoanCard key={loan.id} loan={loan} />
-          ))}
+            </div>
+          </aside>
+          <main className="flex-1 p-4">
+            <Breadcrumb location={location} />
+            <Outlet />
+          </main>
         </div>
-      </div>
-    </div>
-  );
-};
+      );
+    };

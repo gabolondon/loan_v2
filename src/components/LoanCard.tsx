@@ -4,6 +4,7 @@ import React, { useState } from 'react';
     import { Loan, Payment } from '../types';
     import { useStore } from '../store/useStore';
     import { useNavigate } from 'react-router-dom';
+    import { Modal } from './Modal';
 
     interface Props {
       loan: Loan;
@@ -12,18 +13,21 @@ import React, { useState } from 'react';
     export const LoanCard: React.FC<Props> = ({ loan }) => {
       const { user, addPayment, updateLoanStatus } = useStore();
       const navigate = useNavigate();
+      const [showModal, setShowModal] = useState(false);
       const [showAllPayments, setShowAllPayments] = useState(false);
 
-      const totalPaid = loan?.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
-      const monthsSinceStart = differenceInMonths(new Date(), new Date(loan?.startDate)) + 1;
+      const totalPaid =
+        loan?.payments?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
+      const monthsSinceStart =
+        differenceInMonths(new Date(), new Date(loan?.startDate)) + 1;
       const monthlyInterestRate = loan?.interestRate / 100;
       const totalInterest = loan?.amount * monthlyInterestRate * monthsSinceStart;
       const totalWithInterest = loan?.amount + totalInterest;
       const remaining = totalWithInterest - totalPaid;
       const progress = (totalPaid / totalWithInterest) * 100;
 
-      const handleAddPayment = () => {
-        const amount = parseFloat(prompt('Enter payment amount:') || '0');
+      const handleAddPayment = (data: any) => {
+        const amount = parseFloat(data.amount);
         if (amount > 0) {
           const payment: Payment = {
             id: crypto.randomUUID(),
@@ -75,13 +79,13 @@ import React, { useState } from 'react';
               {isAdmin && (
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleUpdateStatus("approved")}
+                    onClick={() => handleUpdateStatus('approved')}
                     className="p-2 text-green-600 rounded-full hover:bg-green-50"
                   >
                     <CheckCircle size={20} />
                   </button>
                   <button
-                    onClick={() => handleUpdateStatus("rejected")}
+                    onClick={() => handleUpdateStatus('rejected')}
                     className="p-2 text-red-600 rounded-full hover:bg-red-50"
                   >
                     <XCircle size={20} />
@@ -133,16 +137,14 @@ import React, { useState } from 'react';
                 <div className="flex items-center text-gray-600">
                   <Calendar size={16} className="mr-1" />
                   <span className="text-sm">
-                    {loan?.startDate && format(
-                      new Date(loan?.startDate),
-                      "MMM d, yyyy"
-                    )}
+                    {loan?.startDate &&
+                      format(new Date(loan?.startDate), 'MMM d, yyyy')}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   {isAdmin && (
                     <button
-                      onClick={handleAddPayment}
+                      onClick={() => setShowModal(true)}
                       className="flex items-center px-4 py-2 text-white transition-colors bg-green-500 rounded-lg hover:bg-green-600"
                     >
                       <PlusCircle size={16} className="mr-2" />
@@ -161,26 +163,58 @@ import React, { useState } from 'react';
             </>
           )}
           <div className="mt-4 border-t pt-4">
-            <h4 className="mb-2 text-lg font-semibold text-gray-700">Payments</h4>
+            <h4 className="mb-2 text-lg font-semibold text-gray-700">
+              Payments
+            </h4>
             <div className="max-h-40 overflow-y-auto">
               {loan?.payments && loan?.payments.length > 0 ? (
                 <ul className="space-y-2">
                   {lastThreePayments.map((payment) => (
-                    <li key={payment.id} className="flex items-center justify-between px-3 py-2 bg-gray-100 rounded-md">
+                    <li
+                      key={payment.id}
+                      className="flex items-center justify-between px-3 py-2 bg-gray-100 rounded-md"
+                    >
                       <span className="text-sm text-gray-700">
                         ${payment.amount.toLocaleString()}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {format(new Date(payment.date), "MMM d, yyyy")}
+                        {format(new Date(payment.date), 'MMM d, yyyy')}
                       </span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-gray-500">No payments have been made for this loan.</p>
+                <p className="text-gray-500">
+                  No payments have been made for this loan.
+                </p>
               )}
             </div>
           </div>
+
+          <Modal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            onSubmit={handleAddPayment}
+            title="Add Payment"
+          >
+            <div>
+              <label
+                htmlFor="amount"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Amount ($)
+              </label>
+              <input
+                type="number"
+                id="amount"
+                name="amount"
+                min="0.01"
+                step="0.01"
+                required
+                className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
+          </Modal>
         </div>
       );
     };
